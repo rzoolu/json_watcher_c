@@ -32,18 +32,6 @@ static int get_file_events(int inotify_fd, file_monitor_callbacks callbacks)
             {
                 TRACE_INFO("The file was modified.");
 
-                // FILE* file = fopen("./access_points.json", "rb");
-                // fseek(file, 0, SEEK_END);
-                // const long file_size = ftell(file);
-                // fseek(file, 0, SEEK_SET);
-
-                // char* file_data = malloc(file_size + 1);
-                // int number_of_bytes = fread(file_data, 1, file_size, file);
-                // file_data[number_of_bytes] = 0;
-
-                // TRACE_INFO("File content: %s", file_data);
-                // free(file_data);
-
                 if (callbacks.file_modified)
                 {
                     callbacks.file_modified();

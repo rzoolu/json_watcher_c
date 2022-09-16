@@ -6,7 +6,10 @@
 #include <trace.h>
 
 #include <stb/stb_ds.h>
+
+#include <signal.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define ACCESS_POINTS_PATH "./sample_data/access_points.json"
 
@@ -87,8 +90,20 @@ static void init_data(void)
     set_current_access_points(parsed);
 }
 
+static void termination_handler(int signum)
+{
+    TRACE_INFO("Signal %d (%s) received, cleanup.", signum, strsignal(signum));
+
+    close_communication();
+
+    _Exit(EXIT_SUCCESS);
+}
+
 int main(int /*argc*/, char* /*argv*/[])
 {
+    signal(SIGINT, termination_handler);
+    signal(SIGTERM, termination_handler);
+
     init_data();
     init_communication();
 

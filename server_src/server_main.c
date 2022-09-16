@@ -98,14 +98,17 @@ static void termination_handler(int signum)
 
     _Exit(EXIT_SUCCESS);
 }
-
-int main(int /*argc*/, char* /*argv*/[])
+static void init_signal_handling(void)
 {
     signal(SIGINT, termination_handler);
     signal(SIGTERM, termination_handler);
+}
 
+int main(int /*argc*/, char* /*argv*/[])
+{
     init_data();
     init_communication();
+    init_signal_handling();
 
     TRACE_INFO("Start monitoring file changes for %s", ACCESS_POINTS_PATH);
 

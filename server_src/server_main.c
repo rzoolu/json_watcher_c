@@ -8,7 +8,7 @@
 #include <stb/stb_ds.h>
 #include <stdlib.h>
 
-#define ACCESS_POINTS_PATH "./access_points.json"
+#define ACCESS_POINTS_PATH "./sample_data/access_points.json"
 
 static void file_modified(void)
 {

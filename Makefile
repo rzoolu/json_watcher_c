@@ -1,5 +1,5 @@
 CC = gcc
-CFLAGS = -D DEBUG --std=gnu18 -Wall -Wextra -ggdb 
+CFLAGS = -D DEBUG --std=gnu17 -Wall -Wextra -ggdb 
 
 SRC_DIR = server_src
 COMMON_DIR = common

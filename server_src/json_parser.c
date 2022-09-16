@@ -5,7 +5,6 @@
 
 #define JSMN_STATIC
 #include <jsmn/jsmn.h>
-
 #include <stb/stb_ds.h>
 
 #include <stdio.h>

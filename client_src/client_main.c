@@ -1,21 +1,27 @@
 #include "message_printer.h"
 
 #include <ipc_interface.h>
+#include <trace.h>
+
+#include <errno.h>
+#include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
-#include <trace.h>
+#include <sys/stat.h>
 
 static int msg_queue_id = 0;
 
 void init_communication(void)
 {
-    key_t key = ftok(IPC_KEY_PATH, IPC_KEY_ID);
-    msg_queue_id = msgget(key, 0666 | IPC_CREAT);
+    const key_t key = ftok(IPC_KEY_PATH, IPC_KEY_ID);
+    // create or get rw msg queue
+    msg_queue_id = msgget(key, S_IRUSR | S_IWUSR | IPC_CREAT);
 
     if (msg_queue_id < 0)
     {
-        TRACE_ERROR("Message queue creation problem.");
+        TRACE_ERROR("Message queue creation problem: %s", strerror(errno));
         exit(EXIT_FAILURE);
     }
 
@@ -27,7 +33,7 @@ static void receive_msg(void)
     message received_msg;
     // receive any message in blocking manner
 
-    const size_t max_size_of_payload = sizeof(received_msg) - sizeof(received_msg.message_type);
+    const size_t max_size_of_payload = sizeof(message) - offsetof(message, message_data);
     ssize_t received =
         msgrcv(msg_queue_id, &received_msg, max_size_of_payload, 0, 0);
 

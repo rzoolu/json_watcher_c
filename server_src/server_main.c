@@ -2,9 +2,11 @@
 #include "communication.h"
 #include "file_monitor.h"
 #include "json_parser.h"
+
+#include <trace.h>
+
 #include <stb/stb_ds.h>
 #include <stdlib.h>
-#include <trace.h>
 
 #define ACCESS_POINTS_PATH "./access_points.json"
 

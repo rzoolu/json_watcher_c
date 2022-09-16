@@ -1,7 +1,9 @@
 #include "file_monitor.h"
+
+#include <trace.h>
+
 #include <stdbool.h>
 #include <sys/inotify.h>
-#include <trace.h>
 #include <unistd.h>
 
 // waits for file modification events and calls callbacks until file exist

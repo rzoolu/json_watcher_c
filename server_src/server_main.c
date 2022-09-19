@@ -1,3 +1,5 @@
+#define _GNU_SOURCE // for sigabbrev_np
+
 #include "access_points_data.h"
 #include "communication.h"
 #include "file_monitor.h"
@@ -92,7 +94,7 @@ static void init_data(void)
 
 static void termination_handler(int signum)
 {
-    TRACE_INFO("Signal %d (%s) received, cleanup.", signum, strsignal(signum));
+    TRACE_INFO("Signal SIG%s (%d) received, cleanup.", sigabbrev_np(signum), signum);
 
     close_communication();
 
@@ -102,6 +104,7 @@ static void init_signal_handling(void)
 {
     signal(SIGINT, termination_handler);
     signal(SIGTERM, termination_handler);
+    signal(SIGQUIT, termination_handler);
 }
 
 int main(int /*argc*/, char* /*argv*/[])

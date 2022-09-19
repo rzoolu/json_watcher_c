@@ -35,6 +35,12 @@ access_point_map* create_access_point_map(void);
 // Deletes access point map.
 void delete_access_point_map(access_point_map* map);
 
+// Inserts new entry to the map.
+void add_to_map(access_point_map* map, const access_point* ap);
+
+// Return number of elements in map.
+size_t map_size(access_point_map* map);
+
 ////////////////////////////////////////////////////////
 // List searching functions
 ////////////////////////////////////////////////////////

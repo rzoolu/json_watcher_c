@@ -32,6 +32,16 @@ void delete_access_point_map(access_point_map* map)
     shfree(map);
 }
 
+void add_to_map(access_point_map* map, const access_point* ap)
+{
+    shput(map, ap->ssid, *ap);
+}
+
+size_t map_size(access_point_map* map)
+{
+    return shlen(map);
+}
+
 int find_ssid_in_map(access_point_map* map, const char* ssid)
 {
     return shgeti(map, ssid);

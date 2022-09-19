@@ -7,8 +7,6 @@
 
 #include <trace.h>
 
-#include <stb/stb_ds.h>
-
 #include <signal.h>
 #include <stdlib.h>
 #include <string.h>
@@ -30,7 +28,7 @@ static void file_modified(void)
     access_point_map* current_map = get_current_access_points();
 
     // go through new_list and detect SSID addition or change of parameters
-    for (int i = 0; i < shlen(new_map); ++i)
+    for (size_t i = 0; i < map_size(new_map); ++i)
     {
         list_change change =
             detect_changed_ssid(current_map, &new_map[i].value);
@@ -60,7 +58,7 @@ static void file_modified(void)
     }
 
     // go through current_list and detect SSID removal
-    for (int i = 0; i < shlen(current_map); ++i)
+    for (size_t i = 0; i < map_size(current_map); ++i)
     {
         if (find_ssid_in_map(new_map, current_map[i].value.ssid) == AP_MAP_NOT_FOUND)
         {
@@ -77,9 +75,9 @@ static void file_deleted(void)
     TRACE_INFO("Handling of file deletion.");
 
     access_point_map* current_map = get_current_access_points();
-    // notify about all ssid being removed
 
-    for (int i = 0; i < shlen(current_map); ++i)
+    // notify about all ssid being removed
+    for (size_t i = 0; i < map_size(current_map); ++i)
     {
         send_removed_ssid(&current_map[i].value);
     }

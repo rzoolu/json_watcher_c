@@ -3,9 +3,9 @@
 
 #include <trace.h>
 
+// make all JSMN symbols static to avoid collisions
 #define JSMN_STATIC
 #include <jsmn/jsmn.h>
-#include <stb/stb_ds.h>
 
 #include <stdio.h>
 #include <stdlib.h>
@@ -69,6 +69,53 @@ static int json_token_eq_str(const char* file_data, jsmntok_t* tok, const char* 
     return -1;
 }
 
+// parses single access_point, returns last token in parsed access_point
+static int parse_access_point(jsmntok_t* tokens, int current_token, const char* file_data, access_point_map* ap_map)
+{
+    int number_of_attributes = tokens[current_token].size;
+
+    access_point ap = {0};
+
+    for (int attribute = 0; attribute < number_of_attributes; ++attribute)
+    {
+        // to attribute
+        ++current_token;
+
+        if (json_token_eq_str(file_data, &tokens[current_token], "ssid") == 0)
+        {
+            // to value
+            ++current_token;
+            int ssid_len =
+                tokens[current_token].end - tokens[current_token].start;
+
+            ssid_len = (ssid_len > (SSID_MAX_LEN - 1)) ? SSID_MAX_LEN - 1 : ssid_len;
+
+            strncpy(ap.ssid,
+                    file_data + tokens[current_token].start,
+                    ssid_len);
+
+            ap.ssid[ssid_len] = 0;
+        }
+        else if (json_token_eq_str(file_data, &tokens[current_token], "snr") == 0)
+        {
+            // to value
+            ++current_token;
+            ap.SNR = strtol(file_data + tokens[current_token].start, NULL, 10);
+        }
+        else if (json_token_eq_str(file_data, &tokens[current_token], "channel") == 0)
+        {
+            // to value
+            ++current_token;
+            ap.channel = strtol(file_data + tokens[current_token].start, NULL, 10);
+        }
+    }
+
+    // insert ap into hash map
+    add_to_map(ap_map, &ap);
+
+    return current_token;
+}
+
 access_point_map* parse_json(const char* file_path)
 {
 
@@ -106,57 +153,25 @@ access_point_map* parse_json(const char* file_path)
 
     const int access_points_array_token = 2;
 
-    access_point_map* ap_map = create_access_point_map();
-
     int current_token = access_points_array_token;
     int number_of_aps = tokens[access_points_array_token].size;
+
+    access_point_map* ap_map = create_access_point_map();
     for (int ap_n = 0; ap_n < number_of_aps; ++ap_n)
 
     {
         if (tokens[current_token + 1].type == JSMN_OBJECT)
         {
-            // to next object
+            // to next access point object
             ++current_token;
-            int number_of_attributes = tokens[current_token].size;
+            current_token = parse_access_point(tokens, current_token, file_buf.data, ap_map);
+        }
+        else
+        {
+            TRACE_ERROR("Improper JSON format, expected access_point object.");
+            delete_access_point_map(ap_map);
 
-            access_point ap;
-
-            for (int attribute = 0; attribute < number_of_attributes; ++attribute)
-            {
-                // to attribute
-                ++current_token;
-
-                if (json_token_eq_str(file_buf.data, &tokens[current_token], "ssid") == 0)
-                {
-                    // to value
-                    ++current_token;
-                    int ssid_len =
-                        tokens[current_token].end - tokens[current_token].start;
-
-                    ssid_len = (ssid_len > (SSID_MAX_LEN - 1)) ? SSID_MAX_LEN - 1 : ssid_len;
-
-                    strncpy(ap.ssid,
-                            file_buf.data + tokens[current_token].start,
-                            ssid_len);
-
-                    ap.ssid[ssid_len] = 0;
-                }
-                else if (json_token_eq_str(file_buf.data, &tokens[current_token], "snr") == 0)
-                {
-                    // to value
-                    ++current_token;
-                    ap.SNR = strtol(file_buf.data + tokens[current_token].start, NULL, 10);
-                }
-                else if (json_token_eq_str(file_buf.data, &tokens[current_token], "channel") == 0)
-                {
-                    // to value
-                    ++current_token;
-                    ap.channel = strtol(file_buf.data + tokens[current_token].start, NULL, 10);
-                }
-            }
-
-            // insert ap into hash map
-            shput(ap_map, ap.ssid, ap);
+            return NULL;
         }
     }
     return ap_map;

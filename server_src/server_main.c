@@ -13,13 +13,13 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define ACCESS_POINTS_PATH "./sample_data/access_points.json"
+static const char* monitored_file = NULL;
 
 static void file_modified(void)
 {
     TRACE_INFO("Handling of file modification.");
 
-    access_point_map* new_map = parse_json(ACCESS_POINTS_PATH);
+    access_point_map* new_map = parse_json(monitored_file);
 
     if (!new_map)
     {
@@ -85,9 +85,9 @@ static void file_deleted(void)
     }
 }
 
-static void init_data(void)
+static void init_data(const char* file_path)
 {
-    access_point_map* parsed = parse_json(ACCESS_POINTS_PATH);
+    access_point_map* parsed = parse_json(file_path);
 
     if (!parsed)
     {
@@ -113,20 +113,28 @@ static void init_signal_handling(void)
     signal(SIGQUIT, termination_handler);
 }
 
-int main(int /*argc*/, char* /*argv*/[])
+int main(int argc, char* argv[])
 {
-    init_data();
+    if (argc != 2)
+    {
+        TRACE_INFO("Missing path, usage: %s /file/path/name.json", argv[0]);
+        exit(EXIT_FAILURE);
+    }
+
+    const char* file_path = argv[1];
+
+    init_data(file_path);
     init_communication();
     init_signal_handling();
 
-    TRACE_INFO("Start monitoring file changes for %s", ACCESS_POINTS_PATH);
+    TRACE_INFO("Start monitoring file changes for %s", file_path);
 
+    monitored_file = file_path;
     const file_monitor_callbacks cbs = {.file_modified = file_modified,
                                         .file_deleted = file_deleted};
 
-    monitor_file(ACCESS_POINTS_PATH, cbs);
+    monitor_file(file_path, cbs);
 
     close_communication();
-
-    return 0;
+    return EXIT_SUCCESS;
 }

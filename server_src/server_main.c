@@ -76,7 +76,13 @@ static void file_deleted(void)
 {
     TRACE_INFO("Handling of file deletion.");
 
-    // TODO: notify about all ssid being removed?
+    access_point_map* current_map = get_current_access_points();
+    // notify about all ssid being removed
+
+    for (int i = 0; i < shlen(current_map); ++i)
+    {
+        send_removed_ssid(&current_map[i].value);
+    }
 }
 
 static void init_data(void)

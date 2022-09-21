@@ -2,13 +2,13 @@
 #include "access_points_data.h"
 
 #include <trace.h>
+#include <utils.h>
 
 // make all JSMN symbols static to avoid collisions
 #define JSMN_STATIC
 #include <jsmn/jsmn.h>
 
 #include <stdio.h>
-#include <stdlib.h>
 #include <string.h>
 
 #define EXPECTED_TOKENS 1024
@@ -33,12 +33,7 @@ static file_buffer read_file(const char* file_path)
     const long file_size = ftell(file);
     fseek(file, 0, SEEK_SET);
 
-    char* file_data = malloc(file_size + 1);
-    if (!file_data)
-    {
-        TRACE_ERROR("Couldn't allocate to open file: %s", file_path);
-        return (file_buffer){.data = NULL, .size = 0};
-    }
+    char* file_data = SAFE_MALLOC(file_size + 1);
 
     int number_of_bytes = fread(file_data, 1, file_size, file);
     if (number_of_bytes != file_size)
@@ -119,7 +114,7 @@ static int parse_access_point(jsmntok_t* tokens, int current_token, const char* 
 access_point_map* parse_json(const char* file_path)
 {
 
-    const file_buffer file_buf = read_file(file_path);
+    file_buffer file_buf = read_file(file_path);
     if (!file_buf.data)
     {
         return NULL;
@@ -174,5 +169,8 @@ access_point_map* parse_json(const char* file_path)
             return NULL;
         }
     }
+
+    SAFE_FREE(file_buf.data);
+
     return ap_map;
 }

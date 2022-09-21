@@ -2,10 +2,10 @@
 
 #include <ipc_interface.h>
 #include <trace.h>
+#include <utils.h>
 
 #include <errno.h>
 #include <stddef.h>
-#include <stdlib.h>
 #include <string.h>
 #include <sys/ipc.h>
 #include <sys/msg.h>
@@ -49,7 +49,7 @@ void send_new_ssid(const access_point* new_ssid)
     TRACE_INFO("New SSID for %s msg sent. Msg payload size: %ld, number of params: %u",
                new_ssid->ssid, payload_size, NEW_SSID_CURRENT_NUMBER_OF_PARAMS);
 
-    NEW_SSID_message* new_ssid_msg = malloc(total_size_of_msg);
+    NEW_SSID_message* new_ssid_msg = SAFE_MALLOC(total_size_of_msg);
 
     new_ssid_msg->message_type = MSG_ID_NEW_SSID;
 
@@ -67,7 +67,7 @@ void send_new_ssid(const access_point* new_ssid)
 
     msgsnd(msg_queue_id, new_ssid_msg, payload_size, 0);
 
-    free(new_ssid_msg);
+    SAFE_FREE(new_ssid_msg);
 }
 
 void send_removed_ssid(const access_point* old_ssid)
@@ -111,7 +111,7 @@ void send_param_change(const access_point* from, const access_point* to, const p
     TRACE_INFO("Param changed for %s msg sent. Payload size: %ld, number of changed params %u",
                from->ssid, payload_size, number_of_changed_params);
 
-    SSID_CHANGED_message* param_change_msg = malloc(total_size_of_msg);
+    SSID_CHANGED_message* param_change_msg = SAFE_MALLOC(total_size_of_msg);
 
     param_change_msg->message_type = MSG_ID_SSID_CHANGED;
     param_change_msg->number_of_changed_parameters = number_of_changed_params;
@@ -147,5 +147,5 @@ void send_param_change(const access_point* from, const access_point* to, const p
 
     msgsnd(msg_queue_id, param_change_msg, payload_size, 0);
 
-    free(param_change_msg);
+    SAFE_FREE(param_change_msg);
 }

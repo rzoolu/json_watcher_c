@@ -5,7 +5,7 @@
 void init_communication(void);
 
 // Cleanup communication resources, shall be send after communication is finished
-void close_communication(void);
+void cleanup_communication(void);
 
 // Sends new_ssid message
 void send_new_ssid(const access_point* new_ssid);

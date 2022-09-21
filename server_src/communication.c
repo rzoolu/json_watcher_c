@@ -28,7 +28,7 @@ void init_communication(void)
     TRACE_INFO("Communication initalized.");
 }
 
-void close_communication(void)
+void cleanup_communication(void)
 {
     if (msgctl(msg_queue_id, IPC_RMID, NULL) != 0)
     {

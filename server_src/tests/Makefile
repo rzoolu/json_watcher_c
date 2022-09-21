@@ -41,5 +41,8 @@ $(BUILD_DIR)/munit.o: $(3RDP_DIR)/munit/munit.c
 tests: $(OBJS)
 	$(CC) -o $@ $^ $(CFLAGS)
 
+valgrind: tests
+	valgrind --leak-check=full --show-leak-kinds=all  ./tests
+
 clean:
 	rm -f $(BUILD_DIR)/*.o tests

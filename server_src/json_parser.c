@@ -130,12 +130,14 @@ access_point_map* parse_json(const char* file_path)
     if (read_tokens < 3)
     {
         TRACE_ERROR("JSON parsing error: %d", read_tokens);
+        SAFE_FREE(file_buf.data);
         return NULL;
     }
 
     if (tokens[0].type != JSMN_OBJECT)
     {
         TRACE_ERROR("Top JSON object expected.");
+        SAFE_FREE(file_buf.data);
         return NULL;
     }
 
@@ -143,6 +145,7 @@ access_point_map* parse_json(const char* file_path)
         tokens[2].type != JSMN_ARRAY)
     {
         TRACE_ERROR("JSON access_points array expected.");
+        SAFE_FREE(file_buf.data);
         return NULL;
     }
 

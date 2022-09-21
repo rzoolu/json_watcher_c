@@ -96,11 +96,16 @@ static void init_data(const char* file_path)
     set_current_access_points(parsed);
 }
 
+static void cleanup_data()
+{
+    set_current_access_points(NULL);
+}
+
 static void termination_handler(int signum)
 {
     TRACE_INFO("Signal SIG%s (%d) received, cleanup.", sigabbrev_np(signum), signum);
 
-    close_communication();
+    cleanup_communication();
 
     _Exit(EXIT_SUCCESS);
 }
@@ -133,6 +138,7 @@ int main(int argc, char* argv[])
 
     monitor_file(file_path, cbs);
 
-    close_communication();
+    cleanup_communication();
+    cleanup_data();
     return EXIT_SUCCESS;
 }

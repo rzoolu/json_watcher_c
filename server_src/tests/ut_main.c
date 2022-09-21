@@ -56,36 +56,33 @@ MunitResult find_in_map_test(const MunitParameter /*params*/[], void* /*user_dat
 
 MunitTest access_points_data_tests[] =
     {
-        {
-            "/create_delete_map_test", // name
-            create_delete_map_test,    // test
-            NULL,                      //  setup
-            NULL,                      //  tear_down
-            MUNIT_TEST_OPTION_NONE,    // options
-            NULL                       // parameters
-        },
-        {"/add_to_map_test",
-         add_to_map_test,
-         NULL,
-         NULL,
-         MUNIT_TEST_OPTION_NONE,
-         NULL},
-        {"/find_in_map_test",
-         find_in_map_test,
-         NULL,
-         NULL,
-         MUNIT_TEST_OPTION_NONE,
-         NULL},
+        {.name = "/create_delete_map_test",
+         .test = create_delete_map_test,
+         .setup = NULL,
+         .tear_down = NULL,
+         .options = MUNIT_TEST_OPTION_NONE,
+         .parameters = NULL},
+        {.name = "/add_to_map_test",
+         .test = add_to_map_test,
+         .setup = NULL,
+         .tear_down = NULL,
+         .options = MUNIT_TEST_OPTION_NONE,
+         .parameters = NULL},
+        {.name = "/find_in_map_test",
+         .test = find_in_map_test,
+         .setup = NULL,
+         .tear_down = NULL,
+         .options = MUNIT_TEST_OPTION_NONE,
+         .parameters = NULL},
 
         {NULL, NULL, NULL, NULL, MUNIT_TEST_OPTION_NONE, NULL}}; // test array terminator
 
 static const MunitSuite suite = {
-    "/access_points_data_tests", // name
-    access_points_data_tests,    // tests
-    NULL,                        // suites
-    1,                           // iterations
-    MUNIT_SUITE_OPTION_NONE      // options
-};
+    .prefix = "",
+    .tests = access_points_data_tests,
+    .suites = NULL,
+    .iterations = 1,
+    .options = MUNIT_SUITE_OPTION_NONE};
 
 int main(int argc, char** argv)
 {

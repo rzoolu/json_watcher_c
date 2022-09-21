@@ -42,7 +42,7 @@ tests: $(OBJS)
 	$(CC) -o $@ $^ $(CFLAGS)
 
 valgrind: tests
-	valgrind --leak-check=full --show-leak-kinds=all  ./tests
+	valgrind -q --leak-check=full --show-leak-kinds=all  ./tests
 
 clean:
 	rm -f $(BUILD_DIR)/*.o tests

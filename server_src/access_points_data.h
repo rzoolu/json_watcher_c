@@ -86,5 +86,5 @@ list_change detect_changed_ssid(access_point_map* current_ssids,
 
 // Compares two access_points for parameter changes
 // @return  param_changes structure represent difference,
-//          each member is set to true when corespoding parameter values were different
+//          each member is set to true when corresponding parameter values were different
 param_changes detect_param_changes(const access_point* lhs, const access_point* rhs);

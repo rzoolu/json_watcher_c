@@ -135,6 +135,43 @@ MunitResult detect_changed_ssid_test(const MunitParameter /*params*/[], void* fi
     return MUNIT_OK;
 }
 
+MunitResult detect_param_changes_test(const MunitParameter /*params*/[], void* /*fixture*/)
+{
+    access_point lhs = {.ssid = "some_ssid",
+                        .channel = 1u,
+                        .SNR = 10u};
+
+    access_point rhs = {.ssid = "some_ssid",
+                        .channel = 1u,
+                        .SNR = 10u};
+
+    param_changes changes = detect_param_changes(&lhs, &rhs);
+
+    // no difference
+    munit_assert_false(changes.channel_change);
+    munit_assert_false(changes.SNR_change);
+
+    //  difference in SNR only
+    ++rhs.SNR;
+    changes = detect_param_changes(&lhs, &rhs);
+    munit_assert_false(changes.channel_change);
+    munit_assert_true(changes.SNR_change);
+
+    //  difference in channel & SNR
+    ++rhs.channel;
+    changes = detect_param_changes(&lhs, &rhs);
+    munit_assert_true(changes.channel_change);
+    munit_assert_true(changes.SNR_change);
+
+    // difference in channel only
+    lhs.SNR = rhs.SNR;
+    changes = detect_param_changes(&lhs, &rhs);
+    munit_assert_true(changes.channel_change);
+    munit_assert_false(changes.SNR_change);
+
+    return MUNIT_OK;
+}
+
 MunitTest access_points_data_tests[] =
     {
         {.name = "/create_delete_map_test",
@@ -161,11 +198,16 @@ MunitTest access_points_data_tests[] =
          .tear_down = NULL,
          .options = MUNIT_TEST_OPTION_NONE,
          .parameters = NULL},
-
         {.name = "/detect_changed_ssid_test",
          .test = detect_changed_ssid_test,
          .setup = create_map_with_entry,
          .tear_down = delete_map,
+         .options = MUNIT_TEST_OPTION_NONE,
+         .parameters = NULL},
+        {.name = "/detect_param_changes_test",
+         .test = detect_param_changes_test,
+         .setup = NULL,
+         .tear_down = NULL,
          .options = MUNIT_TEST_OPTION_NONE,
          .parameters = NULL},
 

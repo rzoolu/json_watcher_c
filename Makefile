@@ -29,6 +29,8 @@ $(BUILD_DIR)/%.o: $(SRC_DIR)/%.c $(HEADERS)
 server: $(OBJS)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
+xsan_server: CFLAGS += -fsanitize=address,undefined # -O1 -fno-omit-frame-pointer
+xsan_server: server
 
 # client
 CLIENT_SRC_DIR=client_src
@@ -44,6 +46,8 @@ $(BUILD_DIR)/%.o: $(CLIENT_SRC_DIR)/%.c $(CLIENT_HEADERS)
 client: $(CLIENT_OBJS)
 	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
+xsan_client: CFLAGS += -fsanitize=address,undefined # -O1 -fno-omit-frame-pointer
+xsan_client: client
 
 clean:
 	rm -f $(BUILD_DIR)/*.o server client

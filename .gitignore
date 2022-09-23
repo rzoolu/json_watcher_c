@@ -37,6 +37,7 @@
 client
 server
 tests
+!tests/
 
 # Debug files
 *.dSYM/

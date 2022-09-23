@@ -2,6 +2,7 @@
 
 #include <ipc_interface.h>
 #include <trace.h>
+#include <utils.h>
 
 #include <errno.h>
 #include <stddef.h>
@@ -62,7 +63,7 @@ static void receive_msg(void)
     }
 }
 
-int main(int /*argc*/, char* /*argv*/[])
+int main(int UNUSED(argc), char* UNUSED(argv[]))
 {
     init_communication();
 

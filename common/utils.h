@@ -39,3 +39,11 @@ static inline void safe_free(const void* ptr, const char* file, int line)
 #define SAFE_FREE(ptr)                  \
     safe_free(ptr, __FILE__, __LINE__); \
     ptr = NULL;
+
+// For explicit marking of unused parameters,
+// e.g: foo(int UNUSED(x)) or foo(int UNUSED(x[]))
+#if defined(__GNUC__) || defined(__clang__)
+#define UNUSED(x) UNUSED_##x __attribute__((unused))
+#else
+#define UNUSED(x) UNUSED_##x
+#endif

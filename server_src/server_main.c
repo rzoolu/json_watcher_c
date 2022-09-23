@@ -17,7 +17,7 @@ static void file_modified(void)
 {
     TRACE_INFO("Handling of file modification.");
 
-    access_point_map* new_map = parse_json(monitored_file);
+    access_point_map* new_map = parse_json_from_file(monitored_file);
 
     if (!new_map)
     {
@@ -85,7 +85,7 @@ static void file_deleted(void)
 
 static void init_data(const char* file_path)
 {
-    access_point_map* parsed = parse_json(file_path);
+    access_point_map* parsed = parse_json_from_file(file_path);
 
     if (!parsed)
     {

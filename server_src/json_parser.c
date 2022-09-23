@@ -13,20 +13,14 @@
 
 #define EXPECTED_TOKENS 1024
 
-typedef struct file_buffer
-{
-    const char* data;
-    long size;
-} file_buffer;
-
-static file_buffer read_file(const char* file_path)
+static json_data_buffer read_file(const char* file_path)
 {
     FILE* file = fopen(file_path, "rb");
 
     if (!file)
     {
         TRACE_ERROR("Couldn't open file: %s", file_path);
-        return (file_buffer){.data = NULL, .size = 0};
+        return (json_data_buffer){.data = NULL, .size = 0};
     }
 
     fseek(file, 0, SEEK_END);
@@ -35,11 +29,13 @@ static file_buffer read_file(const char* file_path)
 
     char* file_data = SAFE_MALLOC(file_size + 1);
 
-    int number_of_bytes = fread(file_data, 1, file_size, file);
+    const int number_of_bytes = fread(file_data, 1, file_size, file);
     if (number_of_bytes != file_size)
     {
         TRACE_ERROR("Couldn't read file: %s", file_path);
-        return (file_buffer){.data = NULL, .size = 0};
+        SAFE_FREE(file_data);
+        fclose(file);
+        return (json_data_buffer){.data = NULL, .size = 0};
     }
 
     // force null terminate
@@ -50,7 +46,7 @@ static file_buffer read_file(const char* file_path)
         TRACE_ERROR("Failed to close file: %s", file_path);
     }
 
-    return (file_buffer){.data = file_data, .size = file_size};
+    return (json_data_buffer){.data = file_data, .size = file_size};
 }
 
 static int json_token_eq_str(const char* file_data, jsmntok_t* tok, const char* str)
@@ -111,12 +107,26 @@ static int parse_access_point(jsmntok_t* tokens, int current_token, const char* 
     return current_token;
 }
 
-access_point_map* parse_json(const char* file_path)
+access_point_map* parse_json_from_file(const char* file_path)
 {
-
-    file_buffer file_buf = read_file(file_path);
+    json_data_buffer file_buf = read_file(file_path);
     if (!file_buf.data)
     {
+        return NULL;
+    }
+
+    access_point_map* map = parse_json_from_buffer(file_buf);
+
+    SAFE_FREE(file_buf.data);
+
+    return map;
+}
+
+access_point_map* parse_json_from_buffer(json_data_buffer json_buffer)
+{
+    if (json_buffer.data == NULL || json_buffer.size == 0)
+    {
+        TRACE_ERROR("Empty JSON buffer");
         return NULL;
     }
 
@@ -125,27 +135,24 @@ access_point_map* parse_json(const char* file_path)
     jsmn_parser parser;
     jsmn_init(&parser);
     int read_tokens =
-        jsmn_parse(&parser, file_buf.data, file_buf.size, tokens, EXPECTED_TOKENS);
+        jsmn_parse(&parser, json_buffer.data, json_buffer.size, tokens, EXPECTED_TOKENS);
 
     if (read_tokens < 3)
     {
         TRACE_ERROR("JSON parsing error: %d", read_tokens);
-        SAFE_FREE(file_buf.data);
         return NULL;
     }
 
     if (tokens[0].type != JSMN_OBJECT)
     {
         TRACE_ERROR("Top JSON object expected.");
-        SAFE_FREE(file_buf.data);
         return NULL;
     }
 
-    if (json_token_eq_str(file_buf.data, &tokens[1], "access_points") != 0 ||
+    if (json_token_eq_str(json_buffer.data, &tokens[1], "access_points") != 0 ||
         tokens[2].type != JSMN_ARRAY)
     {
         TRACE_ERROR("JSON access_points array expected.");
-        SAFE_FREE(file_buf.data);
         return NULL;
     }
 
@@ -162,18 +169,15 @@ access_point_map* parse_json(const char* file_path)
         {
             // to next access point object
             ++current_token;
-            current_token = parse_access_point(tokens, current_token, file_buf.data, ap_map);
+            current_token = parse_access_point(tokens, current_token, json_buffer.data, ap_map);
         }
         else
         {
             TRACE_ERROR("Improper JSON format, expected access_point object.");
             delete_access_point_map(ap_map);
-
             return NULL;
         }
     }
-
-    SAFE_FREE(file_buf.data);
 
     return ap_map;
 }

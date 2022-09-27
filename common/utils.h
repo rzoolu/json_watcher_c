@@ -9,7 +9,7 @@
 #define UNLIKELY(expr) (expr)
 #endif
 
-static inline void* safe_malloc(size_t size, const char* file, int line)
+static inline void* unique_enough_safe_malloc(size_t size, const char* file, int line)
 {
     void* ptr = calloc(1, size);
     if (UNLIKELY(ptr == NULL))
@@ -22,7 +22,7 @@ static inline void* safe_malloc(size_t size, const char* file, int line)
 }
 
 // little bit strict (requires that free is not called on NULL), but helps to detect double free problem
-static inline void safe_free(const void* ptr, const char* file, int line)
+static inline void unique_enough_safe_free(const void* ptr, const char* file, int line)
 {
     if (UNLIKELY(ptr == NULL))
     {
@@ -35,9 +35,9 @@ static inline void safe_free(const void* ptr, const char* file, int line)
 
 // To improve safety and hide allocation failure handling code
 // below macros can be used by user code instead of malloc/free
-#define SAFE_MALLOC(size) safe_malloc(size, __FILE__, __LINE__)
-#define SAFE_FREE(ptr)                  \
-    safe_free(ptr, __FILE__, __LINE__); \
+#define SAFE_MALLOC(size) unique_enough_safe_malloc(size, __FILE__, __LINE__)
+#define SAFE_FREE(ptr)                                \
+    unique_enough_safe_free(ptr, __FILE__, __LINE__); \
     ptr = NULL;
 
 // For explicit marking of unused parameters,

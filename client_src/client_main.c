@@ -1,78 +1,104 @@
+#define _GNU_SOURCE // for sigabbrev_np
+
 #include "message_printer.h"
 
-#include <ipc_interface.h>
 #include <trace.h>
 #include <utils.h>
 
+#include <czmq.h>
+
 #include <errno.h>
-#include <stddef.h>
-#include <stdlib.h>
+#include <signal.h>
 #include <string.h>
-#include <sys/ipc.h>
-#include <sys/msg.h>
-#include <sys/stat.h>
 
-static int msg_queue_id = 0;
+static zsock_t* sub_socket = NULL;
 
-void init_communication(void)
+static void init_communication(void)
 {
-    const key_t key = ftok(IPC_KEY_PATH, IPC_KEY_ID);
-    // create or get rw msg queue
-    msg_queue_id = msgget(key, S_IRUSR | S_IWUSR | IPC_CREAT);
+    assert(sub_socket == NULL);
 
-    if (msg_queue_id < 0)
+    // create zmq 'subscribe' socket, for all AP_WATCH events
+    sub_socket = zsock_new_sub("tcp://127.0.0.1:4559", "AP_WATCH");
+
+    if (sub_socket == NULL)
     {
-        TRACE_ERROR("Message queue creation problem: %s", strerror(errno));
+        TRACE_ERROR("ZMQ socket creation problem: %d (%s)", errno, strerror(errno));
         exit(EXIT_FAILURE);
     }
 
     TRACE_INFO("Communication initalized.");
 }
 
+static void cleanup_communication(void)
+{
+    zsock_destroy(&sub_socket);
+
+    TRACE_DEBUG("ZMQ socket destroyed.");
+}
+
+static void termination_handler(int signum)
+{
+    TRACE_INFO("Signal SIG%s (%d) received, cleanup.", sigabbrev_np(signum), signum);
+
+    cleanup_communication();
+
+    _Exit(EXIT_SUCCESS);
+}
+static void init_signal_handling(void)
+{
+    signal(SIGINT, termination_handler);
+    signal(SIGTERM, termination_handler);
+    signal(SIGQUIT, termination_handler);
+}
+
 static void receive_msg(void)
 {
-    message received_msg;
-    // receive any message in blocking manner
+    assert(sub_socket);
 
-    const size_t max_size_of_payload = sizeof(message) - offsetof(message, message_data);
-    ssize_t received =
-        msgrcv(msg_queue_id, &received_msg, max_size_of_payload, 0, 0);
-
-    if (received < 0)
+    char* topic;
+    zmsg_t* msg;
+    if (zsock_recv(sub_socket, "sm", &topic, &msg) != 0)
     {
-        TRACE_ERROR("msgrcv error.");
+        TRACE_ERROR("ZMQ receive error: %d (%s)", errno, strerror(errno));
         exit(EXIT_FAILURE);
     }
 
-    TRACE_DEBUG("Received message, type: %ld, payload size: %ld", received_msg.message_type, received);
+    TRACE_DEBUG("Received message, topic: %s, number of frames: %lu, total size in bytes: %lu",
+                topic, zmsg_size(msg), zmsg_content_size(msg));
 
-    switch (received_msg.message_type)
+    if (strcmp(topic, "AP_WATCH/NEW_AP") == 0)
     {
-    case MSG_ID_NEW_SSID:
-        print_NEW_SSID_message((NEW_SSID_message*)&received_msg);
-        break;
-    case MSG_ID_REMOVED_SSID:
-        print_REMOVED_SSID_message((REMOVED_SSID_message*)&received_msg);
-        break;
-    case MSG_ID_SSID_CHANGED:
-        print_SSID_CHANGED_message((SSID_CHANGED_message*)&received_msg);
-        break;
-    default:
-        TRACE_ERROR("Unknown message with id: %ld", received_msg.message_type);
-        break;
+        print_NEW_SSID_message(msg);
     }
+    else if (strcmp(topic, "AP_WATCH/REMOVED_AP") == 0)
+    {
+        print_REMOVED_SSID_message(msg);
+    }
+    else if (strcmp(topic, "AP_WATCH/CHANGED_AP") == 0)
+    {
+        print_SSID_CHANGED_message(msg);
+    }
+    else
+    {
+        TRACE_ERROR("Unknown message with topic: %s", topic);
+    }
+
+    SAFE_FREE(topic);
+    zmsg_destroy(&msg);
 }
 
 int main(int UNUSED(argc), char* UNUSED(argv[]))
 {
     init_communication();
+    init_signal_handling();
 
-    // Infinite message loop
+    // Currently infinite message loop, close with ctrl+c or kill
     for (;;)
     {
-        TRACE_INFO("Start waiting for messages.");
+        TRACE_INFO("Start waiting for message.");
         receive_msg();
     }
 
+    cleanup_communication();
     return 0;
 }

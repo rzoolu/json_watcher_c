@@ -11,7 +11,7 @@ CFLAGS += $(IDIRS)
 BUILD_DIR = build
 
 LDIR =
-LIBS =
+LIBS = -lczmq
 
 default: server
 all: server client

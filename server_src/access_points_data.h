@@ -35,8 +35,11 @@ access_point_map* create_access_point_map(void);
 // Deletes access point map.
 void delete_access_point_map(access_point_map* map);
 
-// Inserts new entry to the map.
-void add_to_map(access_point_map* map, const access_point* ap);
+// Inserts new entry to the map or update value
+// if given key (ssid) already exists.
+// @map pointer to map, it's invalid after function call!
+// @return pointer to possibly reallocated map.
+access_point_map* add_to_map(access_point_map* map, const access_point* ap);
 
 // Return number of elements in map.
 size_t map_size(access_point_map* map);

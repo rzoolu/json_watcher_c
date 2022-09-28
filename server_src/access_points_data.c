@@ -32,9 +32,11 @@ void delete_access_point_map(access_point_map* map)
     shfree(map);
 }
 
-void add_to_map(access_point_map* map, const access_point* ap)
+access_point_map* add_to_map(access_point_map* map, const access_point* ap)
 {
     shput(map, ap->ssid, *ap);
+
+    return map;
 }
 
 size_t map_size(access_point_map* map)

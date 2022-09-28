@@ -1,7 +1,6 @@
 CC = gcc
 CFLAGS = -D DEBUG --std=gnu17 -Wall -Wextra -ggdb 
 
-
 SRC_DIR = ..
 TEST_DIR = .
 
@@ -11,6 +10,8 @@ COMMON_DIR = $(ROOT_DIR)/common
 
 IDIRS = -I$(SRC_DIR) -I$(COMMON_DIR) -I$(3RDP_DIR)
 CFLAGS += $(IDIRS)
+
+LIBS = -lczmq
 
 BUILD_DIR = .
 
@@ -39,7 +40,7 @@ $(BUILD_DIR)/munit.o: $(3RDP_DIR)/munit/munit.c
 	$(CC) -c -o $@ $< $(CFLAGS)	
 
 tests: $(OBJS)
-	$(CC) -o $@ $^ $(CFLAGS)
+	$(CC) -o $@ $^ $(CFLAGS) $(LIBS)
 
 valgrind: tests
 	valgrind -q --leak-check=full --show-leak-kinds=all  ./tests

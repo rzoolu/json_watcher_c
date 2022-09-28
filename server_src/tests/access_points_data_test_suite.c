@@ -14,9 +14,7 @@ static void* create_map_with_entry(const MunitParameter UNUSED(params[]), void* 
                        .channel = 1u,
                        .SNR = 10u};
 
-    add_to_map(new_map, &ap);
-
-    return new_map;
+    return add_to_map(new_map, &ap);
 }
 
 static void delete_map(void* map)
@@ -61,7 +59,7 @@ static MunitResult add_to_map_test(const MunitParameter UNUSED(params[]), void* 
                        .channel = 1u,
                        .SNR = 10u};
 
-    add_to_map(new_map, &ap);
+    new_map = add_to_map(new_map, &ap);
     // one item added
     munit_assert_size(map_size(new_map), ==, 1u);
 
@@ -69,7 +67,7 @@ static MunitResult add_to_map_test(const MunitParameter UNUSED(params[]), void* 
                         .channel = 1u,
                         .SNR = 10u};
 
-    add_to_map(new_map, &ap2);
+    new_map = add_to_map(new_map, &ap2);
     // two items added
     munit_assert_size(map_size(new_map), ==, 2u);
 
@@ -89,7 +87,7 @@ static MunitResult find_in_map_test(const MunitParameter UNUSED(params[]), void*
     // entry is not found before addition
     munit_assert_int(find_ssid_in_map(new_map, ap.ssid), ==, -1);
 
-    add_to_map(new_map, &ap);
+    new_map = add_to_map(new_map, &ap);
 
     // entry is found after addition
     munit_assert_int(find_ssid_in_map(new_map, ap.ssid), !=, -1);

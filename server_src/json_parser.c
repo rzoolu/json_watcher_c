@@ -61,7 +61,7 @@ static int json_token_eq_str(const char* file_data, jsmntok_t* tok, const char* 
 }
 
 // parses single access_point, returns last token in parsed access_point
-static int parse_access_point(jsmntok_t* tokens, int current_token, const char* file_data, access_point_map* ap_map)
+static int parse_access_point(jsmntok_t* tokens, int current_token, const char* file_data, access_point_map** ap_map)
 {
     int number_of_attributes = tokens[current_token].size;
 
@@ -102,7 +102,7 @@ static int parse_access_point(jsmntok_t* tokens, int current_token, const char* 
     }
 
     // insert ap into hash map
-    add_to_map(ap_map, &ap);
+    *ap_map = add_to_map(*ap_map, &ap);
 
     return current_token;
 }
@@ -169,7 +169,7 @@ access_point_map* parse_json_from_buffer(json_data_buffer json_buffer)
         {
             // to next access point object
             ++current_token;
-            current_token = parse_access_point(tokens, current_token, json_buffer.data, ap_map);
+            current_token = parse_access_point(tokens, current_token, json_buffer.data, &ap_map);
         }
         else
         {

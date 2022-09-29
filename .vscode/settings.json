@@ -1,0 +1,20 @@
+{
+    "cSpell.words": [
+        "JSMN",
+        "jsmntok",
+        "munit",
+        "popstr",
+        "shfree",
+        "shgeti",
+        "shlen",
+        "shput",
+        "sigabbrev",
+        "ssid",
+        "ssids",
+        "zframe",
+        "zsock"
+    ],
+    "cSpell.ignorePaths": [
+        "**/3rdp/**"
+    ]
+}

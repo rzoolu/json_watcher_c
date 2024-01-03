@@ -10,9 +10,13 @@
 #define YELLOW "\033[1;33m"
 #define RESET_COLOR "\033[0m"
 
-#define COLOR_PRINT(color, format, ...)              \
-    printf(color format RESET_COLOR, ##__VA_ARGS__); \
-    fflush(stdout);
+#define COLOR_PRINT(color, format, ...)                  \
+    do                                                   \
+    {                                                    \
+        printf(color format RESET_COLOR, ##__VA_ARGS__); \
+        fflush(stdout);                                  \
+    } while (0)
+
 
 void print_NEW_SSID_message(zmsg_t* message)
 {

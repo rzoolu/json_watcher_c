@@ -33,12 +33,15 @@ static inline void unique_enough_safe_free(const void* ptr, const char* file, in
     free((void*)ptr);
 }
 
-// To improve safety and hide allocation failure handling code
+// To improve safety and hide allocation failure handling code,
 // below macros can be used by user code instead of malloc/free
 #define SAFE_MALLOC(size) unique_enough_safe_malloc(size, __FILE__, __LINE__)
-#define SAFE_FREE(ptr)                                \
-    unique_enough_safe_free(ptr, __FILE__, __LINE__); \
-    ptr = NULL;
+#define SAFE_FREE(ptr)                                      \
+    do                                                      \
+    {                                                       \
+        unique_enough_safe_free(ptr, __FILE__, __LINE__);   \
+        ptr = NULL;                                         \
+    } while (0)
 
 // For explicit marking of unused parameters,
 // e.g: foo(int UNUSED(x)) or foo(int UNUSED(x[]))

@@ -109,11 +109,14 @@ static void termination_handler(int signum)
 
     _Exit(EXIT_SUCCESS);
 }
+
 static void init_signal_handling(void)
 {
-    signal(SIGINT, termination_handler);
-    signal(SIGTERM, termination_handler);
-    signal(SIGQUIT, termination_handler);
+    struct sigaction action = {0};
+    action.sa_handler = termination_handler;
+
+    sigaction(SIGINT, &action, NULL);
+    sigaction(SIGTERM, &action, NULL);
 }
 
 int main(int argc, char* argv[])

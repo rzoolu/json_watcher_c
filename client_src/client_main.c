@@ -2,6 +2,7 @@
 
 #include "message_printer.h"
 
+#include <msg_interface.h>
 #include <trace.h>
 #include <utils.h>
 
@@ -18,7 +19,7 @@ static void init_communication(void)
     assert(sub_socket == NULL);
 
     // create zmq 'subscribe' socket, for all AP_WATCH events
-    sub_socket = zsock_new_sub("tcp://127.0.0.1:4559", "AP_WATCH");
+    sub_socket = zsock_new_sub("tcp://127.0.0.1" ":" ZMQ_PORT, AP_WATCH_IF);
 
     if (sub_socket == NULL)
     {
@@ -55,35 +56,35 @@ static void receive_msg(void)
 {
     assert(sub_socket);
 
-    char* topic;
+    char* msg_id;
     zmsg_t* msg;
-    if (zsock_recv(sub_socket, "sm", &topic, &msg) != 0)
+    if (zsock_recv(sub_socket, "sm", &msg_id, &msg) != 0)
     {
         TRACE_ERROR("ZMQ receive error: %d (%s)", errno, strerror(errno));
         exit(EXIT_FAILURE);
     }
 
-    TRACE_DEBUG("Received message, topic: %s, number of frames: %lu, total size in bytes: %lu",
-                topic, zmsg_size(msg), zmsg_content_size(msg));
+    TRACE_DEBUG("Received message: %s, number of frames: %lu, total size in bytes: %lu",
+                msg_id, zmsg_size(msg), zmsg_content_size(msg));
 
-    if (strcmp(topic, "AP_WATCH/NEW_AP") == 0)
+    if (strcmp(msg_id, FULL_MSG_ID(AP_WATCH_IF, NEW_SSID_MSG)) == 0)
     {
         print_NEW_SSID_message(msg);
     }
-    else if (strcmp(topic, "AP_WATCH/REMOVED_AP") == 0)
+    else if (strcmp(msg_id, FULL_MSG_ID(AP_WATCH_IF, REMOVED_SSID_MSG)) == 0)
     {
         print_REMOVED_SSID_message(msg);
     }
-    else if (strcmp(topic, "AP_WATCH/CHANGED_AP") == 0)
+    else if (strcmp(msg_id, FULL_MSG_ID(AP_WATCH_IF, CHANGED_SSID_MSG)) == 0)
     {
         print_SSID_CHANGED_message(msg);
     }
     else
     {
-        TRACE_ERROR("Unknown message with topic: %s", topic);
+        TRACE_ERROR("Unknown message with topic: %s", msg_id);
     }
 
-    SAFE_FREE(topic);
+    SAFE_FREE(msg_id);
     zmsg_destroy(&msg);
 }
 

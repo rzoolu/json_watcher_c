@@ -4,6 +4,7 @@
 
 #include <czmq.h>
 #include <stdio.h>
+#include <stdlib.h>
 
 #define RED "\033[1;31m"
 #define GREEN "\033[1;32m"
@@ -20,16 +21,21 @@
 
 void print_NEW_SSID_message(zmsg_t* message)
 {
-    // 5 frames: ssid param value param value
-    assert(zmsg_size(message) == 5);
+    // 4+ frames: ssid,number_of_params,(param,value)+
+    assert(zmsg_size(message) >= 4);
 
-    char* ssid = zmsg_popstr(message);
+    const char* ssid = zmsg_popstr(message);
     assert(ssid);
     COLOR_PRINT(GREEN, "SSID: %s is added to the list with following parameters:\n", ssid);
     SAFE_FREE(ssid);
 
-    // todo:
-    for (int i = 0; i < 2; ++i)
+    const char* number_of_params = zmsg_popstr(message);
+    assert(number_of_params);
+
+    int num_params = atoi(number_of_params);
+    SAFE_FREE(number_of_params);
+
+    for (int i = 0; i < num_params; ++i)
     {
         char* param_name = zmsg_popstr(message);
         assert(param_name);
@@ -57,8 +63,8 @@ void print_REMOVED_SSID_message(zmsg_t* message)
 
 void print_SSID_CHANGED_message(zmsg_t* message)
 {
-    // 7 frames: ssid param old_value new_value param old_value new_value
-    assert(zmsg_size(message) == 7);
+    // 5+ frames: ssid,number_of_params,(param,old_value,new_value)+
+    assert(zmsg_size(message) >= 5);
 
     char* ssid = zmsg_popstr(message);
     assert(ssid);
@@ -66,8 +72,13 @@ void print_SSID_CHANGED_message(zmsg_t* message)
     COLOR_PRINT(YELLOW, "SSID: %s value(s) has changed:\n", ssid);
     SAFE_FREE(ssid);
 
-    // todo:
-    for (int i = 0; i < 2; ++i)
+    const char* number_of_params = zmsg_popstr(message);
+    assert(number_of_params);
+
+    int num_params = atoi(number_of_params);
+    SAFE_FREE(number_of_params);
+
+    for (int i = 0; i < num_params; ++i)
     {
         char* param_name = zmsg_popstr(message);
         assert(param_name);

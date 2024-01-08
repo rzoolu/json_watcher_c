@@ -1,4 +1,4 @@
-# json_watcher
+# json_watcher_c
 
 Requires CZMQ library with headers, e.g. on Ubuntu: `sudo apt install libczmq4 libczmq-dev`
 

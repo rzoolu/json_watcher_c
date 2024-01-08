@@ -14,7 +14,8 @@ static MunitResult json_parse_invalid_buffer_test(const MunitParameter UNUSED(pa
 
 static MunitResult json_parse_invalid_json_test(const MunitParameter UNUSED(params[]), void* UNUSED(user_data_or_fixture))
 {
-    json_data_buffer empty = {.data = "not//valid//json", .size = 10};
+    const char invalid_json[] = "not valid json";
+    json_data_buffer empty = {.data = invalid_json, .size = sizeof(invalid_json)};
     munit_assert_null(parse_json_from_buffer(empty));
     return MUNIT_OK;
 }
@@ -23,10 +24,10 @@ static MunitResult json_parse_invalid_json_test(const MunitParameter UNUSED(para
 
 static MunitResult json_parse_valid_json_test(const MunitParameter UNUSED(params[]), void* UNUSED(user_data_or_fixture))
 {
-    const char json[100] =
+    const char valid_json[] =
         "{\"access_points\": [{\"ssid\": \"MyAP\",\"snr\": 63,\"channel\": 11}]}";
 
-    json_data_buffer one_entry = {.data = json, .size = 100l};
+    json_data_buffer one_entry = {.data = valid_json, .size = sizeof(valid_json)};
 
     access_point_map* map = parse_json_from_buffer(one_entry);
 
